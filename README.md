@@ -6,6 +6,9 @@ Single-file kana reading practice app (`index.html`), with no build step and no 
 - Toggles for romaji, word spacing, translation; tap a word for its gloss.
 - Progress is kept in the browser's localStorage.
 
+Live (GitHub Pages, served from `main`): https://atlasonholiday-lang.github.io/kana-reading-drills/
+Use this link on the iPhone, not the claude.ai one: iOS sends every claude.ai link to the Claude app, so the artifact can't be opened in Safari or added to the home screen.
+
 ## Origin
 
 Written by Claude on mobile as a claude.ai artifact:
