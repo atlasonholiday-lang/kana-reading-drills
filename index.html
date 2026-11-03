@@ -128,7 +128,9 @@ if(!document.querySelector(`.chip[data-lv="${level}"]`))level="1";
 const HINT='<span class="hint">Read it aloud first. Tap any word you don\'t know.</span>';
 function build(shuffle){
   const list=S.filter(s=>level==="0"?true:level==="r"?marks[key(s)]==="help":s.lv===level);
-  order=list.map(s=>s.id);
+  const unseen=[],seen=[];
+  list.forEach(s=>(marks[key(s)]?seen:unseen).push(s));
+  order=unseen.concat(seen).map(s=>s.id);
   if(shuffle)for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}
   pos=0;
 }
@@ -169,7 +171,8 @@ function tally(){
 }
 function go(d){if(!order.length)return;pos=(pos+d+order.length)%order.length;render();window.scrollTo({top:0})}
 function mark(v){if(!order.length)return;marks[key(S[order[pos]])]=v;store.set("kr-marks2",marks);
-  if(level==="r"&&v==="ok"){order.splice(pos,1);if(pos>=order.length)pos=0;render()}else go(1)}
+  if(level==="r"&&v==="ok"){order.splice(pos,1);if(pos>=order.length)pos=0;render()}
+  else{const id=order[pos];order.splice(pos,1);order.push(id);if(pos>=order.length)pos=0;render();window.scrollTo({top:0})}}
 document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{level=c.dataset.lv;store.set("kr-level",level);build(false);render()});
 $("bRm").onclick=()=>{showRm=!showRm;store.set("kr-rm",showRm);render()};
 $("bSp").onclick=()=>{spaced=!spaced;store.set("kr-sp",spaced);render()};
