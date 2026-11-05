@@ -123,7 +123,7 @@ const $=id=>document.getElementById(id);
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 // progress is keyed by sentence text so it survives adding new sentences
 const key=s=>s.t.map(w=>w[0]).join("");
-let marks=store.get("kr-marks2",{}), level=store.get("kr-level","1"), order=[], pos=0, showRm=store.get("kr-rm",false), spaced=store.get("kr-sp",true);
+let marks=store.get("kr-marks2",{}), level=store.get("kr-level","1"), order=[], pos=0, showRm=false, spaced=store.get("kr-sp",true);
 if(!document.querySelector(`.chip[data-lv="${level}"]`))level="1";
 const HINT='<span class="hint">Read it aloud first. Tap any word you don\'t know.</span>';
 function build(shuffle){
@@ -132,7 +132,7 @@ function build(shuffle){
   list.forEach(s=>(marks[key(s)]?seen:unseen).push(s));
   order=unseen.concat(seen).map(s=>s.id);
   if(shuffle)for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}
-  pos=0;
+  pos=0;showRm=false;
 }
 function render(){
   document.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",c.dataset.lv===level));
@@ -169,12 +169,13 @@ function tally(){
   let ok=0,h=0;S.forEach(s=>{const m=marks[key(s)];if(m==="ok")ok++;else if(m==="help")h++});
   $("tally").textContent=`Read on my own: ${ok} · Needed help: ${h} · Not tried: ${S.length-ok-h}`;
 }
-function go(d){if(!order.length)return;pos=(pos+d+order.length)%order.length;render();window.scrollTo({top:0})}
-function mark(v){if(!order.length)return;marks[key(S[order[pos]])]=v;store.set("kr-marks2",marks);
+function go(d){if(!order.length)return;pos=(pos+d+order.length)%order.length;showRm=false;render();window.scrollTo({top:0})}
+function mark(v){if(!order.length)return;showRm=false;marks[key(S[order[pos]])]=v;store.set("kr-marks2",marks);
   if(level==="r"&&v==="ok"){order.splice(pos,1);if(pos>=order.length)pos=0;render()}
   else{const id=order[pos];order.splice(pos,1);order.push(id);if(pos>=order.length)pos=0;render();window.scrollTo({top:0})}}
 document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{level=c.dataset.lv;store.set("kr-level",level);build(false);render()});
-$("bRm").onclick=()=>{showRm=!showRm;store.set("kr-rm",showRm);render()};
+// romaji is turned back off on every new question (see go, mark, build)
+$("bRm").onclick=()=>{showRm=!showRm;render()};
 $("bSp").onclick=()=>{spaced=!spaced;store.set("kr-sp",spaced);render()};
 $("bTr").onclick=()=>{const t=$("trans");t.hidden=!t.hidden;$("bTr").textContent=t.hidden?"Show translation":"Hide translation"};
 $("bNext").onclick=()=>go(1);$("bPrev").onclick=()=>go(-1);
